@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <title> Assignment 1a</title>
+        <link rel="preconnect" href="https://fonts.gstatic.com">
+        <link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP&family=Rubik:wght@400;700&display=swap" rel="stylesheet">
+        <style>
+            
+            h2, table {
+                max-width: 700px;
+                margin: auto;
+                font-family: 'Rubik', sans-serif;
+                font-weight: 700;
+                color: #573757;
+                text-align: center;
+            }
+
+            h2 {
+                padding: 2%;
+                font-style:italic;
+            }
+
+            h3, p {
+                text-align: center;
+                font-family: 'Rubik', sans-serif;
+                font-style: normal;
+                color:black;
+            }
+
+            table, td, th {
+                border: solid 1px #000;
+                column-width: 1500px;
+            }
+            
+            th {
+                padding: 1.5%;
+                text-align: center;
+                font-family: 'Rubik', 'sans-serif';
+                font-weight:400;
+                font-style:normal;
+                background-color: #573757;
+                color: #ffffff;
+            }
+
+            td {
+                padding: 2%;
+                font-family: 'DotGothic16', sans-serif;
+                text-align: center;
+                font-style: normal;
+                color:#573757; 
+            }
+
+            .redText {
+                color: red;
+            }
+
+            .greenText {
+                color: green; 
+            }
+
+            .greyHighlight {
+                background-color: lightgray;
+            }
+
+            .blueHighlight {
+                background-color:rgb(202, 235, 255);
+            }
+
+        </style>
+    </head>
+
+    <body>
+        <h2>Singapore Carpark Availability Table</h2>
+        <h3>Legend:</h3>
+        <p class = "greenText">Parking lots with LESS THAN 80% utilisation rate</p>
+        <p class = "redText">Parking lots with MORE THAN AND EQUAL TO 80% utilisation rate</p>
+        <table id="carparkTable">
+            <thead id = tableHeader>
+                <tr>
+                    <th>Carpark Number</th>
+                    <th>Timestamp</th>
+                    <th>Lot Type</th>
+                    <th>Total Lots</th>
+                    <th>Lots Available</th>
+                    <th>Utilisation (%)</th>
+                </tr>
+            </thead>
+            <tbody id="tableData"></tbody>
+        </table>
+
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script>
+                const x = fetch('https://api.data.gov.sg/v1/transport/carpark-availability');
+                const tableData = document.getElementById("tableData");
+                x.then(response => {
+                    return response.json();
+                }).then( carparkData => {
+                    const carpark = carparkData.items[0].carpark_data;
+
+                    $(tableData)
+                    for (var i=0; i<carpark.length; i++){
+                        var carpark_info = carpark[i]["carpark_info"];
+                        var tr = "<tr>";
+                        var td_carparkNum = "<td>" + carpark[i]["carpark_number"] + "</td>";
+                        var td_updateDatetime = "<td>" + carpark[i]["update_datetime"] +"</td>";
+
+                            for (var j=0; j<carpark_info.length; j++){
+                                var totalLots = Number(carpark_info[j]["total_lots"]);
+                                var lotsAvail = Number(carpark_info[j]["lots_available"]);
+                                var utilisation = Math.round(((totalLots - lotsAvail)/totalLots)*100);
+                                
+                                var td_lotType = "<td>" + carpark_info[j]["lot_type"] + "</td>";
+                                var td_totLots = "<td>" + totalLots + "</td>";
+                                var td_lotsAvail = "<td>" + lotsAvail + "</td>";
+
+                                if (utilisation >= 80){
+                                    var td_utilisation = "<td class='redText'>" + utilisation + "</td>";
+                                }
+
+                                else if(lotsAvail > totalLots){
+                                    var tr = "<tr style = 'background-color='" + "class='blueHighlight'" + "r>";
+                                    var td_utilisation = "<td>" + utilisation + "</td>"+"</tr>"; 
+                                }
+                                else if (isNaN(utilisation)) {
+                                    var tr = "<tr style = 'background-color='" + "class='greyHighlight'" + "r>";
+                                    var td_utilisation = "<td>" + utilisation + "</td>"+"</tr>";
+                                }
+                                else {
+                                    var td_utilisation = "<td class='greenText'>" + utilisation + "</td>";
+                                }
+
+
+                                $("#tableData").append(tr+td_carparkNum+td_updateDatetime+td_lotType+td_totLots+td_lotsAvail+td_utilisation+"</tr>"); 
+                            }
+                    }
+
+                    console.log(carpark); 
+                });
+        </script>
+    </body>
+
+
